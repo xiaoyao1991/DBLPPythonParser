@@ -56,8 +56,11 @@ class DB(object):
                 INSERT INTO authors_publications(author_id, publication_id)
                 VALUES(%s, %s)
             """
-            self.cursor.execute(query, (author_id, pub_id))
-            self.conn.commit()
+            try:
+                self.cursor.execute(query, (author_id, pub_id))
+                self.conn.commit()
+            except:
+                pass
 
 
     def close(self):
