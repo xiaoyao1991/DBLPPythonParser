@@ -29,29 +29,17 @@ class DB(object):
 
         # handle authors
         authors = record.fields['author']
-        author_ids = []
-
         for author in authors:
             query = """
-                SELECT id 
-                from authors 
-                where author = %s
+                INSERT INTO authors (author)
+                VALUES(%s)
+                ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)
             """
             self.cursor.execute(query, (author))
-            author_id = self.cursor.fetchone()
-            if author_id is None:
-                query = """
-                    INSERT INTO authors (author)
-                    VALUES(%s)
-                """
-                self.cursor.execute(query, (author))
-                author_ids.append(int(self.cursor.lastrowid))
-                self.conn.commit()
-            else:
-                author_ids.append(int(author_id['id']))
+            author_id = self.conn.insert_id()
+            self.conn.commit()
 
-        # insert author-publication-relations
-        for author_id in author_ids:
+            # insert many-to-many relationship
             query = """
                 INSERT INTO authors_publications(author_id, publication_id)
                 VALUES(%s, %s)
